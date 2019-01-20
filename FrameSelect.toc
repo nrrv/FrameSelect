@@ -1,0 +1,14 @@
+## Interface: 80000
+## Title: FrameSelect
+## Notes: More visible frame selection
+## Version: v0.1
+## Author: Nrv#1153
+## DefaultState: Enabled
+## SavedVariables: FrameSelectDB
+## OptionalDeps: LibStub, Ace3, LibDualSpec-1.0
+
+#@no-lib-strip@
+embeds.xml
+#@end-no-lib-strip@
+
+FrameSelect.lua
