@@ -2,8 +2,8 @@ FrameSelect = LibStub("AceAddon-3.0"):NewAddon("FrameSelect", "AceEvent-3.0", "A
 
 local defaults = {
 	profile = {
-		enabled = true
-		color = FrameSelect.COLORS.GREEN
+		enabled = true,
+		color = "GREEN"
 	}
 }
 
@@ -26,8 +26,8 @@ function FrameSelect:OnInitialize()
 		GREY = {0.69, 0.69, 0.69, 1},
 		YELLOW = {1, 1, 0.47, 1},
 		ORANGE = {1, 0.6, 0, 1},
-		RED = {1, 0, 0, 1}
-		GREEN = {0.0, 1, 0.0, 1}
+		RED = {1, 0, 0, 1},
+		GREEN = {0.0, 1, 0.0, 0.9},
 		BLUE = {0.0, 0.0, 1, 1}
 	}
 
@@ -57,9 +57,7 @@ function FrameSelect:doSetCustomSelection(frame)
 	frame.selectionHighlight:SetTexture(FrameSelect.DEFAULT_TEXTURE);
 	frame.selectionHighlight:SetTexCoord(unpack(texCoords["Raid-AggroFrame"]));
 	frame.selectionHighlight:SetAllPoints(frame);
-	frame.selectionHighlight:SetVertexColor(FrameSelect.db.profile.color);
-	print("FS: Selection: Color: ".. FrameSelect.db.profile.color)
-
+	frame.selectionHighlight:SetVertexColor(unpack(FrameSelect.COLORS[FrameSelect.db.profile.color]));
 end
 
 function FrameSelect:doSetBlizzardSelection(frame)
@@ -67,8 +65,7 @@ function FrameSelect:doSetBlizzardSelection(frame)
 	frame.selectionHighlight:SetTexture(FrameSelect.DEFAULT_TEXTURE);
 	frame.selectionHighlight:SetTexCoord(unpack(texCoords["Raid-TargetFrame"]));
 	frame.selectionHighlight:SetAllPoints(frame);
-	-- frame.selectionHighlight:SetVertexColor(1, 1, 1);
-	frame.selectionHighlight:SetVertexColor(FrameSelect.COLORS.DEFAULT);
+	frame.selectionHighlight:SetVertexColor(unpack(FrameSelect.COLORS.DEFAULT));
 end
 
 function FrameSelect:doBlizzardReset(reset)
@@ -99,12 +96,8 @@ hooksecurefunc("CompactUnitFrame_UpdateAll", function(frame)
 end)
 
 function FrameSelect:SlashCommands(msg)
-	if msg == "" then
-		print "FS: /: none"
-		return
-	end
-
-	local options = strsplit(string.lower(msg)
+	if msg == "" then return end
+	local options = { strsplit(" ", string.lower(msg)) } -- strsplit does not return a table.
 	
 	if options[1] == "enable" then
 		self.db.profile.enabled = not self.db.profile.enabled
@@ -116,12 +109,23 @@ function FrameSelect:SlashCommands(msg)
 			FrameSelect:doBlizzardReset(true)
 		end
 	elseif options[1] == "color" then
-		local color = FrameSelect.COLORS[options[2]]
-		if(not color) then
-			color = FrameSelect.COLORS.DEFAULT
+		if(not options[2]) then
+			print("FrameSelect: Please specify a color: default, grey, red, green, blue, orange, yellow")
+			return
 		end
-		print("FS: color: ".. color)
+		local colorUpper = string.upper(options[2])
+		local colorTable = FrameSelect.COLORS[colorUpper] -- ensure proper value for later
+		if(not colorTable) then
+			FrameSelect.db.profile.color = "DEFAULT"
+		else
+			FrameSelect.db.profile.color = colorUpper
+		end
 		FrameSelect:doBlizzardReset(false)
+	elseif options[1] == "help" then
+		print("FrameSelect SlashCommands")
+		print("/fs enable")
+		print("/fs color green")
+		print("Colors available: default, grey, red, green, blue, orange, yellow")
 	end
 end
 
