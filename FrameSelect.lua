@@ -18,6 +18,7 @@ function FrameSelect:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
 	self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
 	self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
+
 	self.frames = {}
 	self.DEFAULT_TEXTURE = "Interface\\RaidFrame\\Raid-FrameHighlights"
 
@@ -40,32 +41,57 @@ function FrameSelect:OnInitialize()
 end
 
 function FrameSelect:Refresh()
-	print "FS: Refresh"
+	-- print "FS: Refresh"
 end
 
-local function doSelectOverride(frame)
+function FrameSelect:OnEnable()
+	-- print("FS: OnEnable")
+
+
+	hooksecurefunc("DefaultCompactUnitFrameSetup", function(frame)
+		FrameSelect:doSelectOverride(frame)
+	end)
+
+	hooksecurefunc("DefaultCompactMiniFrameSetup", function(frame)
+		FrameSelect:doSelectOverride(frame)
+	end)
+
+	hooksecurefunc("CompactUnitFrame_UpdateAll", function(frame)
+		if frame:IsForbidden() then return end
+
+		local name = frame:GetName()
+		if not name or not name:match("^Compact") then
+			return
+		end
+
+		if (not UnitExists(frame.displayedUnit)) then return end
+		FrameSelect:doSelectOverride(frame)
+	end)
+
+end
+
+function FrameSelect:doSelectOverride(frame)
 	if not FrameSelect.db.profile.enabled then return end
 
 	if frame:IsForbidden() then return end
 	FrameSelect.frames[frame] = true	-- store reference for toggling later
 	FrameSelect:doSetCustomSelection(frame)
-	-- print("FS: addFrame: ".. FrameSelect:tablelength(FrameSelect.frames))
 end
 
 function FrameSelect:doSetCustomSelection(frame)
 	if frame:IsForbidden() then return end
 	frame.selectionHighlight:SetTexture(FrameSelect.DEFAULT_TEXTURE);
 	frame.selectionHighlight:SetTexCoord(unpack(texCoords["Raid-AggroFrame"]));
-	frame.selectionHighlight:SetAllPoints(frame);
 	frame.selectionHighlight:SetVertexColor(unpack(FrameSelect.COLORS[FrameSelect.db.profile.color]));
+	frame.selectionHighlight:SetAllPoints(frame);
 end
 
 function FrameSelect:doSetBlizzardSelection(frame)
 	if frame:IsForbidden() then return end
 	frame.selectionHighlight:SetTexture(FrameSelect.DEFAULT_TEXTURE);
 	frame.selectionHighlight:SetTexCoord(unpack(texCoords["Raid-TargetFrame"]));
-	frame.selectionHighlight:SetAllPoints(frame);
 	frame.selectionHighlight:SetVertexColor(unpack(FrameSelect.COLORS.DEFAULT));
+	frame.selectionHighlight:SetAllPoints(frame);
 end
 
 function FrameSelect:doBlizzardReset(reset)
@@ -77,23 +103,6 @@ function FrameSelect:doBlizzardReset(reset)
 		end
 	end
 end
-
-hooksecurefunc("DefaultCompactUnitFrameSetup", doSelectOverride)
-hooksecurefunc("DefaultCompactMiniFrameSetup", doSelectOverride)
-
-hooksecurefunc("CompactUnitFrame_UpdateAll", function(frame)
-	if frame:IsForbidden() then return end
-
-	local name = frame:GetName()
-	if not name or not name:match("^Compact") then
-		return
-	end
-
-	-- print("FS: frame name: ".. name .." | Parent: ".. frame:GetParent():GetName())
-	if ( not UnitExists(frame.displayedUnit) ) then return end
-
-	doSelectOverride(frame)
-end)
 
 function FrameSelect:SlashCommands(msg)
 	if msg == "" then return end
@@ -128,11 +137,3 @@ function FrameSelect:SlashCommands(msg)
 		print("Colors available: default, grey, red, green, blue, orange, yellow")
 	end
 end
-
---[[
-function FrameSelect:tablelength(T)
-	local count = 0
-	for _ in pairs(T) do count = count + 1 end
-	return count
-end
---]]
