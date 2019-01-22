@@ -75,10 +75,10 @@ function FrameSelect:doSelectOverride(frame)
 
 	if frame:IsForbidden() then return end
 	FrameSelect.frames[frame] = true	-- store reference for toggling later
-	FrameSelect:doSetCustomSelection(frame)
+	FrameSelect:doCustomSelection(frame)
 end
 
-function FrameSelect:doSetCustomSelection(frame)
+function FrameSelect:doCustomSelection(frame)
 	if frame:IsForbidden() then return end
 	frame.selectionHighlight:SetTexture(FrameSelect.DEFAULT_TEXTURE);
 	frame.selectionHighlight:SetTexCoord(unpack(texCoords["Raid-AggroFrame"]));
@@ -86,7 +86,7 @@ function FrameSelect:doSetCustomSelection(frame)
 	frame.selectionHighlight:SetAllPoints(frame);
 end
 
-function FrameSelect:doSetBlizzardSelection(frame)
+function FrameSelect:doBlizzardSelection(frame)
 	if frame:IsForbidden() then return end
 	frame.selectionHighlight:SetTexture(FrameSelect.DEFAULT_TEXTURE);
 	frame.selectionHighlight:SetTexCoord(unpack(texCoords["Raid-TargetFrame"]));
@@ -97,9 +97,9 @@ end
 function FrameSelect:doBlizzardReset(reset)
 	for frame, _ in pairs(FrameSelect.frames) do
 		if(reset) then
-			FrameSelect:doSetBlizzardSelection(frame)
+			FrameSelect:doBlizzardSelection(frame)
 		else
-			FrameSelect:doSetCustomSelection(frame)
+			FrameSelect:doCustomSelection(frame)
 		end
 	end
 end
