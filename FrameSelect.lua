@@ -29,10 +29,10 @@ function FrameSelect:OnInitialize()
 	self.DEFAULT_TEXTURE = "Interface\\RaidFrame\\Raid-FrameHighlights"
 
 	self.COLORS = {
-		DEFAULT = {1, 1, 1},
+		DEFAULT = {1, 1, 1, 1},
 		GREY = {0.69, 0.69, 0.69, 1},
 		YELLOW = {1, 1, 0.5, 1},
-		ORANGE = {1, 0, 0, 1},
+		ORANGE = {1, 0.5, 0, 1},
 		RED = {1, 0, 0, 1},
 		GREEN = {0, 1, 0, 0.9},
 		BLUE = {0, 0, 1, 1}
@@ -48,6 +48,11 @@ end
 
 function FrameSelect:Refresh()
 	-- self:debug("Refresh", "Refresh")
+	if self.db.profile.enabled then
+		FrameSelect:doBlizzardReset(false)
+	else
+		FrameSelect:doBlizzardReset(true)
+	end
 end
 
 function FrameSelect:OnEnable()
@@ -121,10 +126,15 @@ function FrameSelect:doBlizzardReset(reset)
 	-- self:debug("reset", "doBlizzardReset")
 
 	for frame, _ in pairs(FrameSelect.frames) do
-		if(reset) then
-			FrameSelect:doBlizzardSelection(frame)
+		if frame and frame.IsShown and not frame:IsForbidden() then
+			if(reset) then
+				FrameSelect:doBlizzardSelection(frame)
+			else
+				FrameSelect:doCustomSelection(frame)
+			end
 		else
-			FrameSelect:doCustomSelection(frame)
+			-- Clean up stale frame reference
+			FrameSelect.frames[frame] = nil
 		end
 	end
 end
@@ -170,7 +180,7 @@ function FrameSelect:SlashCommands(msg)
 		print("/fs enable")
 		print("/fs color green")
 		print("Colors available: default, grey, red, green, blue, orange, yellow")
-		print("/fs toggleTexture")
+		print("/fs toggletexture")
 	end
 end
 
